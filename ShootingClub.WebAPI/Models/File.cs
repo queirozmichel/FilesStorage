@@ -15,5 +15,5 @@ public class File
   public byte[]? Data { get; set; }
   public int ClientId { get; set; }
   public Client? Client { get; set; }
-  public DateTime ChangeDate { get; set; }
+  public DateTime? ChangeDate { get; set; }
 }

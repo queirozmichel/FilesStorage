@@ -26,5 +26,5 @@ public class Address
   public string? CEP { get; set; }
   public int ClientId { get; set; }
   public Client? Cliente { get; set; }
-  public DateTime ChangeDate { get; set; }
+  public DateTime? ChangeDate { get; set; }
 }

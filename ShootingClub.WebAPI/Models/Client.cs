@@ -28,5 +28,5 @@ public class Client
   public string? PhoneNumber { get; set; }
   public ICollection<Address>? Addresses { get; set; }
   public ICollection<File>? Files { get; set; }
-  public DateTime ChangeDate { get; set; }
+  public DateTime? ChangeDate { get; set; }
 }
