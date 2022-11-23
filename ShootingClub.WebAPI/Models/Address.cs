@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace ShootingClub.WebAPI.Models;
 
@@ -24,7 +25,9 @@ public class Address
   [Required]
   [Column(TypeName = "char(8)")]
   public string? CEP { get; set; }
-  public int ClientId { get; set; }
-  public Client? Cliente { get; set; }
+  [Required]
+  public int ClientId { get; set; } //Propriedade de navegação
+  [JsonIgnore]
+  public Client? Cliente { get; set; } //Propriedade de navegação
   public DateTime? ChangeDate { get; set; }
 }
