@@ -4,79 +4,157 @@ using Microsoft.EntityFrameworkCore;
 using ShootingClub.WebAPI.Context;
 using ShootingClub.WebAPI.Models;
 
-namespace ShootingClub.WebAPI.Controllers
+namespace ShootingClub.WebAPI.Controllers;
+
+[Route("[controller]")]
+[ApiController]
+public class ClientsController : ControllerBase
 {
-  [Route("[controller]")]
-  [ApiController]
-  public class ClientsController : ControllerBase
+  private readonly WebAPIContext _context;
+
+  public ClientsController(WebAPIContext context)
   {
-    private readonly WebAPIContext _context;
+    _context = context;
+  }
 
-    public ClientsController(WebAPIContext context)
+  [HttpGet("addresses")]
+  public ActionResult<IEnumerable<Client>> GetClientsAddresses()
+  {
+    try
     {
-      _context = context;
+      return _context.Clients.Include(a => a.Addresses).AsNoTracking().ToList();
     }
-
-    [HttpGet]
-    public ActionResult<IEnumerable<Client>> Get()
+    catch (Exception)
     {
-      var clients = _context.Clients.ToList();
+      return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um problema ao tentar executar a sua solicitação.");
+    }    
+  }
+
+  [HttpGet("files")]
+  public ActionResult<IEnumerable<Client>> GetClientsFiles()
+  {
+    try
+    {
+      return _context.Clients.Include(f => f.Files).AsNoTracking().ToList();
+    }
+    catch (Exception)
+    {
+      return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um problema ao tentar executar a sua solicitação.");
+    }
+  }
+
+  [HttpGet("addresses/files")]
+  public ActionResult<IEnumerable<Client>> GetClientsAddressesFiles()
+  {
+    try
+    {
+      return _context.Clients.Include(a => a.Addresses).Include(f => f.Files).AsNoTracking().ToList();
+    }
+    catch (Exception)
+    {
+      return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um problema ao tentar executar a sua solicitação.");
+    }
+  }
+
+  [HttpGet]
+  public ActionResult<IEnumerable<Client>> Get()
+  {
+    try
+    {
+      var clients = _context.Clients.AsNoTracking().ToList();
       if (clients is null)
       {
         return NotFound("Clientes não encontrados.");
       }
       return clients;
     }
-
-    [HttpGet("{id:int}", Name="ObterCliente")]
-    public ActionResult<Client> Get(int id)
+    catch (Exception)
     {
-      var client = _context.Clients.FirstOrDefault(c => c.ClientId == id);
+      return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um problema ao tentar executar a sua solicitação.");
+    }
+    
+  }
+
+  [HttpGet("{id:int}", Name = "GetClient")]
+  public ActionResult<Client> Get(int id)
+  {
+    try
+    {
+      var client = _context.Clients.AsNoTracking().FirstOrDefault(c => c.ClientId == id);
       if (client == null)
       {
-        return NotFound("Cliente não encontrado.");
+        return NotFound($"Cliente com id {id} não encontrado.");
       }
       return client;
     }
+    catch (Exception)
+    {
+      return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um problema ao tentar executar a sua solicitação.");
+    }
+    
+  }
 
-    [HttpPost]
-    public ActionResult Post(Client client)
+  [HttpPost]
+  public ActionResult Post(Client client)
+  {
+    try
     {
       if (client is null)
       {
-        return BadRequest();
+        return BadRequest("Dados inválidos.");
       }
       _context.Clients.Add(client);
       _context.SaveChanges();
 
-      return new CreatedAtRouteResult("ObterCliente", new { id = client.ClientId }, client);
+      return new CreatedAtRouteResult("GetClient", new { id = client.ClientId }, client);
     }
+    catch (Exception)
+    {
+      return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um problema ao tentar executar a sua solicitação.");
+    }
+    
+  }
 
-    [HttpPut("{id:int}")]
-    public ActionResult Put(int id, Client client)
+  [HttpPut("{id:int}")]
+  public ActionResult Put(int id, Client client)
+  {
+    try
     {
       if (id != client.ClientId)
       {
-        return BadRequest("Os id's são diferentes.");
+        return BadRequest($"Os id's, {id} e {client.ClientId} são diferentes.");
       }
       _context.Entry(client).State = EntityState.Modified;
       _context.SaveChanges();
 
       return Ok(client);
     }
+    catch (Exception)
+    {
+      return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um problema ao tentar executar a sua solicitação.");
+    }
+    
+  }
 
-    [HttpDelete("{id:int}")]
-    public ActionResult Delete(int id)
+  [HttpDelete("{id:int}")]
+  public ActionResult Delete(int id)
+  {
+    try
     {
       var client = _context.Clients.FirstOrDefault(c => c.ClientId == id);
-      if(client == null)
+      if (client == null)
       {
-        return NotFound("Cliente não encontrado.");
+        return NotFound($"Cliente com id {id} não encontrado.");
       }
       _context.Clients.Remove(client);
       _context.SaveChanges();
-       
+
       return Ok(client);
     }
+    catch (Exception)
+    {
+      return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um problema ao tentar executar a sua solicitação.");
+    }
+    
   }
 }
