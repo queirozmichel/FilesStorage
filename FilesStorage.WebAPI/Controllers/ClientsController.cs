@@ -1,8 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using FilesStorage.WebAPI.Context;
 using FilesStorage.WebAPI.Models;
+using FilesStorage.WebAPI.Repository;
 
 namespace FilesStorage.WebAPI.Controllers;
 
@@ -10,19 +9,19 @@ namespace FilesStorage.WebAPI.Controllers;
 [ApiController]
 public class ClientsController : ControllerBase
 {
-  private readonly WebAPIContext _context;
+  private readonly IUnitOfWork _uof;
 
-  public ClientsController(WebAPIContext context)
+  public ClientsController(IUnitOfWork uof)
   {
-    _context = context;
+    _uof = uof;
   }
 
   [HttpGet("addresses")]
-  public async Task<ActionResult<IEnumerable<Client>>> GetClientsAddressesAsync()
+  public ActionResult<IEnumerable<Client>> GetClientsAddresses()
   {
     try
     {
-      return await _context.Clients.Include(a => a.Addresses).AsNoTracking().ToListAsync();
+      return _uof.ClientRepository.Get().Include(a => a.Addresses).AsNoTracking().ToList();
     }
     catch (Exception)
     {
@@ -31,11 +30,11 @@ public class ClientsController : ControllerBase
   }
 
   [HttpGet("files")]
-  public async Task<ActionResult<IEnumerable<Client>>> GetClientsFilesAsync()
+  public ActionResult<IEnumerable<Client>> GetClientsFiles()
   {
     try
     {
-      return await _context.Clients.Include(f => f.Files).AsNoTracking().ToListAsync();
+      return _uof.ClientRepository.Get().Include(f => f.Files).AsNoTracking().ToList();
     }
     catch (Exception)
     {
@@ -44,11 +43,29 @@ public class ClientsController : ControllerBase
   }
 
   [HttpGet("addresses/files")]
-  public async Task<ActionResult<IEnumerable<Client>>> GetClientsAddressesFilesAsync()
+  public ActionResult<IEnumerable<Client>> GetClientsAddressesFiles()
   {
     try
     {
-      return await _context.Clients.Include(a => a.Addresses).Include(f => f.Files).AsNoTracking().ToListAsync();
+      return _uof.ClientRepository.Get().Include(a => a.Addresses).Include(f => f.Files).AsNoTracking().ToList();
+    }
+    catch (Exception)
+    {
+      return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um problema ao tentar executar a sua solicitação.");
+    }
+  }
+
+  [HttpGet("GetMaleClients")]
+  public ActionResult<IEnumerable<Client>> GetMaleClients()
+  {
+    try
+    {
+      var clients = _uof.ClientRepository.GetMaleClients().ToList();
+      if (clients.Count == 0)
+      {
+        return NotFound("Não existem clientes masculinos");
+      }
+      return clients;
     }
     catch (Exception)
     {
@@ -57,11 +74,11 @@ public class ClientsController : ControllerBase
   }
 
   [HttpGet]
-  public async Task<ActionResult<IEnumerable<Client>>> GetAsync()
+  public ActionResult<IEnumerable<Client>> Get()
   {
     try
     {
-      var clients = await _context.Clients.AsNoTracking().ToListAsync();
+      var clients = _uof.ClientRepository.Get().AsNoTracking().ToList();
       if (clients is null)
       {
         return NotFound("Clientes não encontrados.");
@@ -76,11 +93,11 @@ public class ClientsController : ControllerBase
   }
 
   [HttpGet("{id}", Name = "GetClient")]
-  public async Task<ActionResult<Client>> GetAsync(int id)
+  public ActionResult<Client> Get(int id)
   {
     try
     {
-      var client = await _context.Clients.Include(a => a.Addresses).Include(f => f.Files).AsNoTracking().FirstOrDefaultAsync(c => c.ClientId == id);
+      var client = _uof.ClientRepository.Get().Include(a => a.Addresses).Include(f => f.Files).AsNoTracking().FirstOrDefault(c => c.ClientId == id);
       if (client == null)
       {
         return NotFound($"Cliente com id {id} não encontrado.");
@@ -103,8 +120,8 @@ public class ClientsController : ControllerBase
       {
         return BadRequest("Dados inválidos.");
       }
-      _context.Clients.Add(client);
-      _context.SaveChanges();
+      _uof.ClientRepository.Add(client);
+      _uof.Commit();
 
       return new CreatedAtRouteResult("GetClient", new { id = client.ClientId }, client);
     }
@@ -124,8 +141,8 @@ public class ClientsController : ControllerBase
       {
         return BadRequest($"Os id's, {id} e {client.ClientId} são diferentes.");
       }
-      _context.Entry(client).State = EntityState.Modified;
-      _context.SaveChanges();
+      _uof.ClientRepository.Update(client);
+      _uof.Commit();
 
       return Ok(client);
     }
@@ -141,13 +158,13 @@ public class ClientsController : ControllerBase
   {
     try
     {
-      var client = _context.Clients.FirstOrDefault(c => c.ClientId == id);
+      var client = _uof.ClientRepository.Get().FirstOrDefault(c => c.ClientId == id);
       if (client == null)
       {
         return NotFound($"Cliente com id {id} não encontrado.");
       }
-      _context.Clients.Remove(client);
-      _context.SaveChanges();
+      _uof.ClientRepository.Delete(client);
+      _uof.Commit();
 
       return Ok(client);
     }

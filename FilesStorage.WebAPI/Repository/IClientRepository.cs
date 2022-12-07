@@ -5,5 +5,4 @@ namespace FilesStorage.WebAPI.Repository;
 public interface IClientRepository : IRepository<Client>
 {
   IEnumerable<Client> GetMaleClients();
-  IEnumerable<Client> GetClientsWithAddresses();
 }

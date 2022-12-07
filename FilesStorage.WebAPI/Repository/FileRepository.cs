@@ -11,6 +11,6 @@ public class FileRepository : Repository<File>, IFileRepository
 
   public IEnumerable<File> GetFilesByClientId(int id)
   {
-    return GetAll().Where(f => f.ClientId == id);
+    return Get().Where(f => f.ClientId == id);
   }
 }

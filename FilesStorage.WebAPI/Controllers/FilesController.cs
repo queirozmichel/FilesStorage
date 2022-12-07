@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using FilesStorage.WebAPI.Context;
 using File = FilesStorage.WebAPI.Models.File;
+using FilesStorage.WebAPI.Repository;
 
 namespace FilesStorage.WebAPI.Controllers;
 
@@ -9,19 +9,19 @@ namespace FilesStorage.WebAPI.Controllers;
 [ApiController]
 public class FilesController : ControllerBase
 {
-  private readonly WebAPIContext _context;
+  private readonly IUnitOfWork _uof;
 
-  public FilesController(WebAPIContext context)
+  public FilesController(IUnitOfWork uof)
   {
-    _context = context;
+    _uof = uof;
   }
 
   [HttpGet]
-  public async Task<ActionResult<IEnumerable<File>>> GetAsync()
+  public ActionResult<IEnumerable<File>> Get()
   {
     try
     {
-      var files = await _context.Files.AsNoTracking().ToListAsync();
+      var files = _uof.FileRepository.Get().AsNoTracking().ToList();
       if (files == null)
       {
         return NotFound();
@@ -35,16 +35,34 @@ public class FilesController : ControllerBase
   }
 
   [HttpGet("{id}", Name = "GetFile")]
-  public async Task<ActionResult<File>> GetAsync(int id)
+  public ActionResult<File> Get(int id)
   {
     try
     {
-      var file = await _context.Files.AsNoTracking().FirstOrDefaultAsync(f => f.FileId == id);
+      var file = _uof.FileRepository.Get().AsNoTracking().FirstOrDefault(f => f.FileId == id);
       if (file == null)
       {
         return NotFound($"Arquivo com id {id} não encontrado.");
       }
       return file;
+    }
+    catch (Exception)
+    {
+      return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um problema ao tentar executar a sua solicitação.");
+    }
+  }
+
+  [HttpGet("GetFilesByClientId")]
+  public ActionResult<IEnumerable<File>> GetFilesByClientId(int id)
+  {
+    try
+    {
+      var files = _uof.FileRepository.GetFilesByClientId(id).ToList();
+      if (files.Count == 0)
+      {
+        return NotFound($"Não existem arquivos com o clientId {id}.");
+      }
+      return files;
     }
     catch (Exception)
     {
@@ -72,8 +90,8 @@ public class FilesController : ControllerBase
         file.Data = stream.ToArray();
       }
 
-      _context.Add(file);
-      _context.SaveChanges();
+      _uof.FileRepository.Add(file);
+      _uof.Commit();
 
       return new CreatedAtRouteResult("GetFile", new { id = file.FileId }, file);
     }
@@ -99,8 +117,8 @@ public class FilesController : ControllerBase
         file.Data = stream.ToArray();
       }
 
-      _context.Entry(file).State = EntityState.Modified;
-      _context.SaveChanges();
+      _uof.FileRepository.Update(file);
+      _uof.Commit();
 
       return Ok(file);
     }
@@ -115,14 +133,14 @@ public class FilesController : ControllerBase
   {
     try
     {
-      var file = _context.Files.FirstOrDefault(f => f.FileId == id);
+      var file = _uof.FileRepository.GetById(f => f.FileId == id);
 
       if (file == null)
       {
         return NotFound($"Arquivo com id {id} não encontrado.");
       }
-      _context.Files.Remove(file);
-      _context.SaveChanges();
+      _uof.FileRepository.Delete(file);
+      _uof.Commit();
 
       return Ok("O arquivo foi apagado com sucesso!");
     }

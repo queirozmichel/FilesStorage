@@ -1,18 +1,16 @@
 using Microsoft.EntityFrameworkCore;
 using FilesStorage.WebAPI.Context;
 using System.Text.Json.Serialization;
+using FilesStorage.WebAPI.Repository;
 
 var builder = WebApplication.CreateBuilder(args); //Equivalente ao ConfigureServices()
 
 // Add services to the container.
-
-builder.Services.AddControllers()
-  .AddJsonOptions(options => options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+string mySqlServerConnection = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-string mySqlServerConnection = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddScoped<IUnitOfWork, UnityOfWork>();
 builder.Services.AddDbContext<WebAPIContext>(options => options.UseSqlServer(mySqlServerConnection));
 
 var app = builder.Build(); //Equivalente ao Configure()

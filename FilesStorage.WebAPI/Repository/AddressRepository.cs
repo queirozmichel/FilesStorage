@@ -10,8 +10,8 @@ public class AddressRepository : Repository<Address>, IAddressRepository
 
   }
 
-  public IEnumerable<Address> GetAddressesByClientId()
+  public IEnumerable<Address> GetAddressesByClientId(int id)
   {
-    return GetAll().OrderBy(x => x.ClientId).ToList();
+    return Get().Where(x => x.ClientId == id).ToList();
   }
 }

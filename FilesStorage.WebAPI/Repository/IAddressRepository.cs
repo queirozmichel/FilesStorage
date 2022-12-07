@@ -4,5 +4,5 @@ namespace FilesStorage.WebAPI.Repository;
 
 public interface IAddressRepository : IRepository<Address>
 {
-  IEnumerable<Address> GetAddressesByClientId();
+  IEnumerable<Address> GetAddressesByClientId(int id);
 }

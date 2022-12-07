@@ -10,13 +10,8 @@ public class ClientRepository : Repository<Client>, IClientRepository
   {
   }
 
-  public IEnumerable<Client> GetClientsWithAddresses()
-  {
-    return GetAll().Include(cliente => cliente.Addresses);
-  }
-
   public IEnumerable<Client> GetMaleClients()
   {
-    return GetAll().Where(client => client.Sex == "M");
+    return Get().Where(client => client.Sex == "M");
   }
 }

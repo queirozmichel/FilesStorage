@@ -13,7 +13,7 @@ public class Repository<T> : IRepository<T> where T : class
     _context = context;
   }
 
-  public IQueryable<T> GetAll()
+  public IQueryable<T> Get()
   {
     return _context.Set<T>().AsNoTracking();
   }

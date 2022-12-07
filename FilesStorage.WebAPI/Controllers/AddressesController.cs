@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using FilesStorage.WebAPI.Context;
 using FilesStorage.WebAPI.Models;
+using FilesStorage.WebAPI.Repository;
 
 namespace FilesStorage.WebAPI.Controllers;
 
@@ -9,19 +8,19 @@ namespace FilesStorage.WebAPI.Controllers;
 [ApiController]
 public class AddressesController : ControllerBase
 {
-  private readonly WebAPIContext _context;
+  private readonly IUnitOfWork _uof;
 
-  public AddressesController(WebAPIContext context)
+  public AddressesController(IUnitOfWork uof)
   {
-    _context = context;
+    _uof = uof;
   }
 
   [HttpGet]
-  public async Task<ActionResult<IEnumerable<Address>>> GetAsync()
+  public ActionResult<IEnumerable<Address>> Get()
   {
     try
     {
-      var addresses = await _context.Addresses.AsNoTracking().ToListAsync();
+      var addresses = _uof.AddressRepository.Get().ToList();
       if (addresses is null)
       {
         return NotFound("Endereços não encontrados.");
@@ -33,15 +32,14 @@ public class AddressesController : ControllerBase
     {
       return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um problema ao tentar executar a sua solicitação.");
     }
-
   }
 
   [HttpGet("{id}", Name = "GetAddress")]
-  public async Task<ActionResult<Address>> GetAsync(int id)
+  public ActionResult<Address> Get(int id)
   {
     try
     {
-      var address = await _context.Addresses.AsNoTracking().FirstOrDefaultAsync(a => a.AddressId == id);
+      var address = _uof.AddressRepository.GetById(a => a.AddressId == id);
       if (address is null)
       {
         return NotFound($"Endereço com id {id} não encontrado.");
@@ -55,6 +53,25 @@ public class AddressesController : ControllerBase
     }
   }
 
+  [HttpGet("GetAddressesByClient")]
+  public ActionResult<IEnumerable<Address>> GetAddressesByClientId(int id)
+  {
+    try
+    {
+      var addresses = _uof.AddressRepository.GetAddressesByClientId(id).ToList();
+      if (addresses.Count == 0)
+      {
+        return NotFound($"Não existem endereços com o clientId {id}.");
+      }
+      return addresses;
+    }
+    catch (Exception)
+    {
+      return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um problema ao tentar executar a sua solicitação.");
+    }
+
+  }
+
   [HttpPost]
   public ActionResult Post(Address address)
   {
@@ -64,8 +81,8 @@ public class AddressesController : ControllerBase
       {
         return BadRequest("Dados inválidos.");
       }
-      _context.Add(address);
-      _context.SaveChanges();
+      _uof.AddressRepository.Add(address);
+      _uof.Commit();
 
       return new CreatedAtRouteResult("GetAddress", new { id = address.AddressId }, address);
     }
@@ -85,8 +102,8 @@ public class AddressesController : ControllerBase
       {
         return NotFound($"Os id's {id} e {address.AddressId} são diferentes.");
       }
-      _context.Entry(address).State = EntityState.Modified;
-      _context.SaveChanges();
+      _uof.AddressRepository.Update(address);
+      _uof.Commit();
 
       return Ok(address);
     }
@@ -102,13 +119,13 @@ public class AddressesController : ControllerBase
   {
     try
     {
-      var address = _context.Addresses.FirstOrDefault(a => a.AddressId == id);
+      var address = _uof.AddressRepository.GetById(a => a.AddressId == id);
       if (address == null)
       {
         return NotFound($"Endereço com id {id} não encontrado.");
       }
-      _context.Addresses.Remove(address);
-      _context.SaveChanges();
+      _uof.AddressRepository.Delete(address);
+      _uof.Commit();
 
       return Ok(address);
     }
