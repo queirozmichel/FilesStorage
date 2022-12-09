@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using FilesStorage.WebAPI.Models;
 using FilesStorage.WebAPI.Repository;
+using AutoMapper;
+using FilesStorage.WebAPI.DTOs;
 
 namespace FilesStorage.WebAPI.Controllers;
 
@@ -9,24 +11,27 @@ namespace FilesStorage.WebAPI.Controllers;
 public class AddressesController : ControllerBase
 {
   private readonly IUnitOfWork _uof;
+  private readonly IMapper _mapper;
 
-  public AddressesController(IUnitOfWork uof)
+  public AddressesController(IUnitOfWork uof, IMapper mapper)
   {
     _uof = uof;
+    _mapper = mapper;
   }
 
   [HttpGet]
-  public ActionResult<IEnumerable<Address>> Get()
+  public ActionResult<IEnumerable<AddressDTO>> Get()
   {
     try
-    {
+    {      
       var addresses = _uof.AddressRepository.Get().ToList();
+      var addressesDto = _mapper.Map<List<AddressDTO>>(addresses); 
+
       if (addresses is null)
       {
         return NotFound("Endereços não encontrados.");
       }
-
-      return addresses;
+      return addressesDto;
     }
     catch (Exception)
     {
@@ -35,17 +40,18 @@ public class AddressesController : ControllerBase
   }
 
   [HttpGet("{id}", Name = "GetAddress")]
-  public ActionResult<Address> Get(int id)
+  public ActionResult<AddressDTO> Get(int id)
   {
     try
     {
       var address = _uof.AddressRepository.GetById(a => a.AddressId == id);
+      var addressDto = _mapper.Map<AddressDTO>(address);
       if (address is null)
       {
         return NotFound($"Endereço com id {id} não encontrado.");
       }
 
-      return address;
+      return addressDto;
     }
     catch (Exception)
     {
@@ -54,16 +60,17 @@ public class AddressesController : ControllerBase
   }
 
   [HttpGet("GetAddressesByClient")]
-  public ActionResult<IEnumerable<Address>> GetAddressesByClientId(int id)
+  public ActionResult<IEnumerable<AddressDTO>> GetAddressesByClientId(int id)
   {
     try
     {
       var addresses = _uof.AddressRepository.GetAddressesByClientId(id).ToList();
+      var addressesDto = _mapper.Map<List<AddressDTO>>(addresses);
       if (addresses.Count == 0)
       {
         return NotFound($"Não existem endereços com o clientId {id}.");
       }
-      return addresses;
+      return addressesDto;
     }
     catch (Exception)
     {
@@ -73,18 +80,21 @@ public class AddressesController : ControllerBase
   }
 
   [HttpPost]
-  public ActionResult Post(Address address)
+  public ActionResult Post(AddressDTO addressDto)
   {
     try
     {
-      if (address is null)
+      if (addressDto is null)
       {
         return BadRequest("Dados inválidos.");
       }
+      var address = _mapper.Map<Address>(addressDto);
       _uof.AddressRepository.Add(address);
       _uof.Commit();
 
-      return new CreatedAtRouteResult("GetAddress", new { id = address.AddressId }, address);
+      var addressesDTO = _mapper.Map<AddressDTO>(address);
+
+      return new CreatedAtRouteResult("GetAddress", new { id = address.AddressId }, addressesDTO);
     }
     catch (Exception)
     {
@@ -94,18 +104,19 @@ public class AddressesController : ControllerBase
   }
 
   [HttpPut("{id}")]
-  public ActionResult Put(int id, Address address)
+  public ActionResult Put(int id, AddressDTO addressDto)
   {
     try
     {
-      if (id != address.AddressId)
+      if (id != addressDto.AddressId)
       {
-        return NotFound($"Os id's {id} e {address.AddressId} são diferentes.");
+        return NotFound($"Os id's {id} e {addressDto.AddressId} são diferentes.");
       }
+      var address = _mapper.Map<Address>(addressDto);
       _uof.AddressRepository.Update(address);
       _uof.Commit();
 
-      return Ok(address);
+      return Ok();
     }
     catch (Exception)
     {
@@ -115,7 +126,7 @@ public class AddressesController : ControllerBase
   }
 
   [HttpDelete("{id}")]
-  public ActionResult Delete(int id)
+  public ActionResult<AddressDTO> Delete(int id)
   {
     try
     {
@@ -127,7 +138,9 @@ public class AddressesController : ControllerBase
       _uof.AddressRepository.Delete(address);
       _uof.Commit();
 
-      return Ok(address);
+      var addressDto = _mapper.Map<AddressDTO>(address);
+
+      return Ok(addressDto);
     }
     catch (Exception)
     {

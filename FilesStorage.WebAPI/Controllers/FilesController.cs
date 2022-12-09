@@ -2,6 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using File = FilesStorage.WebAPI.Models.File;
 using FilesStorage.WebAPI.Repository;
+using FilesStorage.WebAPI.DTOs;
+using AutoMapper;
 
 namespace FilesStorage.WebAPI.Controllers;
 
@@ -10,23 +12,26 @@ namespace FilesStorage.WebAPI.Controllers;
 public class FilesController : ControllerBase
 {
   private readonly IUnitOfWork _uof;
+  private readonly IMapper _mapper;
 
-  public FilesController(IUnitOfWork uof)
+  public FilesController(IUnitOfWork uof, IMapper mapper)
   {
     _uof = uof;
+    _mapper = mapper;
   }
 
   [HttpGet]
-  public ActionResult<IEnumerable<File>> Get()
+  public ActionResult<IEnumerable<FileDTO>> Get()
   {
     try
     {
       var files = _uof.FileRepository.Get().AsNoTracking().ToList();
+      var filesDto = _mapper.Map<List<FileDTO>>(files);
       if (files == null)
       {
         return NotFound();
       }
-      return files;
+      return filesDto;
     }
     catch (Exception)
     {
@@ -35,16 +40,17 @@ public class FilesController : ControllerBase
   }
 
   [HttpGet("{id}", Name = "GetFile")]
-  public ActionResult<File> Get(int id)
+  public ActionResult<FileDTO> Get(int id)
   {
     try
     {
       var file = _uof.FileRepository.Get().AsNoTracking().FirstOrDefault(f => f.FileId == id);
+      var fileDto = _mapper.Map<FileDTO>(file);
       if (file == null)
       {
         return NotFound($"Arquivo com id {id} não encontrado.");
       }
-      return file;
+      return fileDto;
     }
     catch (Exception)
     {
@@ -53,16 +59,17 @@ public class FilesController : ControllerBase
   }
 
   [HttpGet("GetFilesByClientId")]
-  public ActionResult<IEnumerable<File>> GetFilesByClientId(int id)
+  public ActionResult<IEnumerable<FileDTO>> GetFilesByClientId(int id)
   {
     try
     {
       var files = _uof.FileRepository.GetFilesByClientId(id).ToList();
+      var filesDto = _mapper.Map<List<FileDTO>>(files);
       if (files.Count == 0)
       {
         return NotFound($"Não existem arquivos com o clientId {id}.");
       }
-      return files;
+      return filesDto;
     }
     catch (Exception)
     {

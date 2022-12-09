@@ -2,6 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using FilesStorage.WebAPI.Models;
 using FilesStorage.WebAPI.Repository;
+using AutoMapper;
+using FilesStorage.WebAPI.DTOs;
 
 namespace FilesStorage.WebAPI.Controllers;
 
@@ -10,18 +12,22 @@ namespace FilesStorage.WebAPI.Controllers;
 public class ClientsController : ControllerBase
 {
   private readonly IUnitOfWork _uof;
+  private readonly IMapper _mapper;
 
-  public ClientsController(IUnitOfWork uof)
+  public ClientsController(IUnitOfWork uof, IMapper mapper)
   {
     _uof = uof;
+    _mapper = mapper;
   }
 
   [HttpGet("addresses")]
-  public ActionResult<IEnumerable<Client>> GetClientsAddresses()
+  public ActionResult<IEnumerable<ClientDTO>> GetClientsAddresses()
   {
     try
     {
-      return _uof.ClientRepository.Get().Include(a => a.Addresses).AsNoTracking().ToList();
+      var clients = _uof.ClientRepository.Get().Include(a => a.Addresses).AsNoTracking().ToList();
+      var clientsDTO = _mapper.Map<List<ClientDTO>>(clients);
+      return clientsDTO;
     }
     catch (Exception)
     {
@@ -30,11 +36,13 @@ public class ClientsController : ControllerBase
   }
 
   [HttpGet("files")]
-  public ActionResult<IEnumerable<Client>> GetClientsFiles()
+  public ActionResult<IEnumerable<ClientDTO>> GetClientsFiles()
   {
     try
     {
-      return _uof.ClientRepository.Get().Include(f => f.Files).AsNoTracking().ToList();
+      var clients = _uof.ClientRepository.Get().Include(f => f.Files).AsNoTracking().ToList();
+      var clientsDTO = _mapper.Map<List<ClientDTO>>(clients);
+      return clientsDTO;
     }
     catch (Exception)
     {
@@ -43,11 +51,13 @@ public class ClientsController : ControllerBase
   }
 
   [HttpGet("addresses/files")]
-  public ActionResult<IEnumerable<Client>> GetClientsAddressesFiles()
+  public ActionResult<IEnumerable<ClientDTO>> GetClientsAddressesFiles()
   {
     try
     {
-      return _uof.ClientRepository.Get().Include(a => a.Addresses).Include(f => f.Files).AsNoTracking().ToList();
+      var clients = _uof.ClientRepository.Get().Include(a => a.Addresses).Include(f => f.Files).AsNoTracking().ToList();
+      var clientsDTO = _mapper.Map<List<ClientDTO>>(clients);
+      return clientsDTO;
     }
     catch (Exception)
     {
@@ -56,16 +66,18 @@ public class ClientsController : ControllerBase
   }
 
   [HttpGet("GetMaleClients")]
-  public ActionResult<IEnumerable<Client>> GetMaleClients()
+  public ActionResult<IEnumerable<ClientDTO>> GetMaleClients()
   {
     try
     {
+
       var clients = _uof.ClientRepository.GetMaleClients().ToList();
+      var clientsDTO = _mapper.Map<List<ClientDTO>>(clients);
       if (clients.Count == 0)
       {
         return NotFound("Não existem clientes masculinos");
       }
-      return clients;
+      return clientsDTO;
     }
     catch (Exception)
     {
@@ -74,16 +86,17 @@ public class ClientsController : ControllerBase
   }
 
   [HttpGet]
-  public ActionResult<IEnumerable<Client>> Get()
+  public ActionResult<IEnumerable<ClientDTO>> Get()
   {
     try
     {
       var clients = _uof.ClientRepository.Get().AsNoTracking().ToList();
+      var clientsDTO = _mapper.Map<List<ClientDTO>>(clients);
       if (clients is null)
       {
         return NotFound("Clientes não encontrados.");
       }
-      return clients;
+      return clientsDTO;
     }
     catch (Exception)
     {
@@ -93,16 +106,17 @@ public class ClientsController : ControllerBase
   }
 
   [HttpGet("{id}", Name = "GetClient")]
-  public ActionResult<Client> Get(int id)
+  public ActionResult<ClientDTO> Get(int id)
   {
     try
     {
       var client = _uof.ClientRepository.Get().Include(a => a.Addresses).Include(f => f.Files).AsNoTracking().FirstOrDefault(c => c.ClientId == id);
+      var clientDTO = _mapper.Map<ClientDTO>(client);
       if (client == null)
       {
         return NotFound($"Cliente com id {id} não encontrado.");
       }
-      return client;
+      return clientDTO;
     }
     catch (Exception)
     {
@@ -112,18 +126,21 @@ public class ClientsController : ControllerBase
   }
 
   [HttpPost]
-  public ActionResult Post(Client client)
+  public ActionResult Post(ClientDTO clientDto)
   {
     try
     {
-      if (client is null)
+      if (clientDto is null)
       {
         return BadRequest("Dados inválidos.");
       }
+      var client = _mapper.Map<Client>(clientDto);
       _uof.ClientRepository.Add(client);
       _uof.Commit();
 
-      return new CreatedAtRouteResult("GetClient", new { id = client.ClientId }, client);
+      var clientDTO = _mapper.Map<ClientDTO>(client);
+
+      return new CreatedAtRouteResult("GetClient", new { id = client.ClientId }, clientDTO);
     }
     catch (Exception)
     {
@@ -133,18 +150,19 @@ public class ClientsController : ControllerBase
   }
 
   [HttpPut("{id}")]
-  public ActionResult Put(int id, Client client)
+  public ActionResult Put(int id, ClientDTO clientDto)
   {
     try
     {
-      if (id != client.ClientId)
+      if (id != clientDto.ClientId)
       {
-        return BadRequest($"Os id's, {id} e {client.ClientId} são diferentes.");
+        return BadRequest($"Os id's, {id} e {clientDto.ClientId} são diferentes.");
       }
+      var client = _mapper.Map<Client>(clientDto);
       _uof.ClientRepository.Update(client);
       _uof.Commit();
 
-      return Ok(client);
+      return Ok();
     }
     catch (Exception)
     {
@@ -154,7 +172,7 @@ public class ClientsController : ControllerBase
   }
 
   [HttpDelete("{id}")]
-  public ActionResult Delete(int id)
+  public ActionResult<ClientDTO> Delete(int id)
   {
     try
     {
@@ -166,7 +184,9 @@ public class ClientsController : ControllerBase
       _uof.ClientRepository.Delete(client);
       _uof.Commit();
 
-      return Ok(client);
+      var clientDto = _mapper.Map<ClientDTO>(client);
+
+      return Ok(clientDto);
     }
     catch (Exception)
     {
