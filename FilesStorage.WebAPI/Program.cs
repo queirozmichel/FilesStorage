@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 using FilesStorage.WebAPI.Repository;
 using AutoMapper;
 using FilesStorage.WebAPI.DTOs.Mappings;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args); //Equivalente ao ConfigureServices()
 
@@ -17,7 +18,8 @@ builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializ
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IUnitOfWork, UnityOfWork>();
-builder.Services.AddDbContext<WebAPIContext>(options => options.UseSqlServer(mySqlServerConnection));
+builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(mySqlServerConnection));
+builder.Services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();
 
 var app = builder.Build(); //Equivalente ao Configure()
 
@@ -30,6 +32,8 @@ if (app.Environment.IsDevelopment())
 
 // middleware para redirecionar para https
 app.UseHttpsRedirection();
+// middleware para habilitar a autenticação
+app.UseAuthentication();
 // middleware para habilitar a autorização
 app.UseAuthorization();
 // middleware para adicionar os endpoints para as Actions dos controladores sem especificar rotas

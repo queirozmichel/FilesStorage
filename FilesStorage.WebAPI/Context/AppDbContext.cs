@@ -1,10 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using FilesStorage.WebAPI.Models;
 using File = FilesStorage.WebAPI.Models.File;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace FilesStorage.WebAPI.Context;
 
-public class AppDbContext : DbContext
+public class AppDbContext : IdentityDbContext
 {
   public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
   {
