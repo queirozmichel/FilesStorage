@@ -12,3 +12,5 @@ AutoMapper 12.0.0
 AutoMapper.Extensions.Microsoft.DependencyInjection 12.0.0
 Newtonsoft.Json 13.0.2
 Microsoft.AspNetCore.Identity.EntityFrameworkCore 6.0.9
+System.IdentityModel.Tokens.Jwt 6.25.1
+Microsoft.AspNetCore.Authentication.JwtBearer 6.0.9

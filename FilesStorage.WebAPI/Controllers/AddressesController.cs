@@ -5,11 +5,14 @@ using AutoMapper;
 using FilesStorage.WebAPI.DTOs;
 using FilesStorage.WebAPI.Pagination;
 using Newtonsoft.Json;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FilesStorage.WebAPI.Controllers;
 
 [Route("api/[controller]")] //Nome do controlador "Addresses"
 [ApiController]
+[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 public class AddressesController : ControllerBase
 {
   private readonly IUnitOfWork _uof;
