@@ -10,3 +10,4 @@ Microsoft.EntityFrameworkCore.Design 6.0.9
 EntityFrameworkCore (ef) 6.0.9
 AutoMapper 12.0.0
 AutoMapper.Extensions.Microsoft.DependencyInjection 12.0.0
+Newtonsoft.Json 13.0.2

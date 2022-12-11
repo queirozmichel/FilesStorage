@@ -4,6 +4,9 @@ using File = FilesStorage.WebAPI.Models.File;
 using FilesStorage.WebAPI.Repository;
 using FilesStorage.WebAPI.DTOs;
 using AutoMapper;
+using FilesStorage.WebAPI.Pagination;
+using FilesStorage.WebAPI.Models;
+using Newtonsoft.Json;
 
 namespace FilesStorage.WebAPI.Controllers;
 
@@ -21,11 +24,23 @@ public class FilesController : ControllerBase
   }
 
   [HttpGet]
-  public ActionResult<IEnumerable<FileDTO>> Get()
+  public ActionResult<IEnumerable<FileDTO>> Get([FromQuery] FilesParameters filesParameters)
   {
     try
     {
-      var files = _uof.FileRepository.Get().AsNoTracking().ToList();
+      var files = _uof.FileRepository.GetFiles(filesParameters);
+      var metadata = new
+      {
+        files.TotalCount,
+        files.PageSize,
+        files.CurrentPage,
+        files.TotalPages,
+        files.HasNext,
+        files.HasPrevious,
+      };
+
+      Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(metadata));
+
       var filesDto = _mapper.Map<List<FileDTO>>(files);
       if (files == null)
       {

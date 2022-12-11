@@ -3,6 +3,8 @@ using FilesStorage.WebAPI.Models;
 using FilesStorage.WebAPI.Repository;
 using AutoMapper;
 using FilesStorage.WebAPI.DTOs;
+using FilesStorage.WebAPI.Pagination;
+using Newtonsoft.Json;
 
 namespace FilesStorage.WebAPI.Controllers;
 
@@ -20,11 +22,23 @@ public class AddressesController : ControllerBase
   }
 
   [HttpGet]
-  public ActionResult<IEnumerable<AddressDTO>> Get()
+  public ActionResult<IEnumerable<AddressDTO>> Get([FromQuery] AddressesParameters addressesParameters)
   {
     try
     {      
-      var addresses = _uof.AddressRepository.Get().ToList();
+      var addresses = _uof.AddressRepository.GetAddresses(addressesParameters);
+      var metadata = new
+      {
+        addresses.TotalCount,
+        addresses.PageSize,
+        addresses.CurrentPage,
+        addresses.TotalPages,
+        addresses.HasNext,
+        addresses.HasPrevious,
+      };
+
+      Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(metadata));
+
       var addressesDto = _mapper.Map<List<AddressDTO>>(addresses); 
 
       if (addresses is null)

@@ -4,6 +4,8 @@ using FilesStorage.WebAPI.Models;
 using FilesStorage.WebAPI.Repository;
 using AutoMapper;
 using FilesStorage.WebAPI.DTOs;
+using FilesStorage.WebAPI.Pagination;
+using Newtonsoft.Json;
 
 namespace FilesStorage.WebAPI.Controllers;
 
@@ -86,11 +88,23 @@ public class ClientsController : ControllerBase
   }
 
   [HttpGet]
-  public ActionResult<IEnumerable<ClientDTO>> Get()
+  public ActionResult<IEnumerable<ClientDTO>> Get([FromQuery] ClientsParameters clientsParameters)
   {
     try
     {
-      var clients = _uof.ClientRepository.Get().AsNoTracking().ToList();
+      var clients = _uof.ClientRepository.GetClients(clientsParameters);
+      var metadata = new
+      {
+        clients.TotalCount,
+        clients.PageSize,
+        clients.CurrentPage,
+        clients.TotalPages,
+        clients.HasNext,
+        clients.HasPrevious,
+      };
+
+      Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(metadata));
+
       var clientsDTO = _mapper.Map<List<ClientDTO>>(clients);
       if (clients is null)
       {
