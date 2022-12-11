@@ -17,6 +17,7 @@ string mySqlServerConnection = builder.Configuration.GetConnectionString("Defaul
 var mappingConfig = new MapperConfiguration(mc => { mc.AddProfile(new MappingProfile()); });
 IMapper mapper = mappingConfig.CreateMapper();
 
+builder.Services.AddCors();
 builder.Services.AddSingleton(mapper);
 builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 builder.Services.AddEndpointsApiExplorer();
@@ -62,7 +63,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
   IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
 });
 
-
 var app = builder.Build(); //Equivalente ao Configure()
 
 // Configure the HTTP request pipeline.
@@ -78,6 +78,8 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 // middleware para habilitar a autorização
 app.UseAuthorization();
+// middleware para habilitar o CORS
+app.UseCors(options => options.AllowAnyOrigin());
 // middleware para adicionar os endpoints para as Actions dos controladores sem especificar rotas
 app.MapControllers();
 
