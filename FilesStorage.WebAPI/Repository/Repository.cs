@@ -6,9 +6,9 @@ namespace FilesStorage.WebAPI.Repository;
 
 public class Repository<T> : IRepository<T> where T : class
 {
-  protected WebAPIContext _context;
+  protected AppDbContext _context;
 
-  public Repository(WebAPIContext context)
+  public Repository(AppDbContext context)
   {
     _context = context;
   }

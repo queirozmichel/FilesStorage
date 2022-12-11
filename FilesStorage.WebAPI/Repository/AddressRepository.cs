@@ -7,7 +7,7 @@ namespace FilesStorage.WebAPI.Repository;
 
 public class AddressRepository : Repository<Address>, IAddressRepository
 {
-  public AddressRepository(WebAPIContext context) : base(context)
+  public AddressRepository(AppDbContext context) : base(context)
   {
 
   }

@@ -10,7 +10,7 @@ using FilesStorage.WebAPI.Context;
 
 namespace FilesStorage.WebAPI.Migrations
 {
-    [DbContext(typeof(WebAPIContext))]
+    [DbContext(typeof(AppDbContext))]
     partial class WebAPIContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

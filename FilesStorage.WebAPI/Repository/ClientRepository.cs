@@ -7,7 +7,7 @@ namespace FilesStorage.WebAPI.Repository;
 
 public class ClientRepository : Repository<Client>, IClientRepository
 {
-  public ClientRepository(WebAPIContext context) : base(context)
+  public ClientRepository(AppDbContext context) : base(context)
   {
   }
 

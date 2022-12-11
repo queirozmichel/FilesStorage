@@ -4,9 +4,9 @@ using File = FilesStorage.WebAPI.Models.File;
 
 namespace FilesStorage.WebAPI.Context;
 
-public class WebAPIContext : DbContext
+public class AppDbContext : DbContext
 {
-  public WebAPIContext(DbContextOptions<WebAPIContext> options) : base(options)
+  public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
   {
 
   }

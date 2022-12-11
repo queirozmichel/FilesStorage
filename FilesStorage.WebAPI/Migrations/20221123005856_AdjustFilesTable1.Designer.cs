@@ -11,7 +11,7 @@ using FilesStorage.WebAPI.Context;
 
 namespace FilesStorage.WebAPI.Migrations
 {
-    [DbContext(typeof(WebAPIContext))]
+    [DbContext(typeof(AppDbContext))]
     [Migration("20221123005856_AdjustFilesTable1")]
     partial class AdjustFilesTable1
     {

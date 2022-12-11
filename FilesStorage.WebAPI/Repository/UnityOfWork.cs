@@ -7,9 +7,9 @@ public class UnityOfWork : IUnitOfWork
   private AddressRepository _addressRepository;
   private ClientRepository _clientRepository;
   private FileRepository _fileRepository;
-  public WebAPIContext _context;
+  public AppDbContext _context;
 
-  public UnityOfWork(WebAPIContext context)
+  public UnityOfWork(AppDbContext context)
   {
     _context = context;
   }
