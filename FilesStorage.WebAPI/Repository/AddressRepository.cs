@@ -1,6 +1,7 @@
 ﻿using FilesStorage.WebAPI.Context;
 using FilesStorage.WebAPI.Models;
 using FilesStorage.WebAPI.Pagination;
+using Microsoft.EntityFrameworkCore;
 
 namespace FilesStorage.WebAPI.Repository;
 
@@ -11,13 +12,13 @@ public class AddressRepository : Repository<Address>, IAddressRepository
 
   }
 
-  public PagedList<Address> GetAddresses(AddressesParameters addressesParameters)
+  public async Task<IEnumerable<Address>> GetAddressesByClientId(int id)
   {
-    return PagedList<Address>.ToPagedList(Get().OrderBy(a => a.AddressId), addressesParameters.PageNumber, addressesParameters.PageSize);
+    return await Get().Where(x => x.ClientId == id).ToListAsync();
   }
 
-  public IEnumerable<Address> GetAddressesByClientId(int id)
+  public async Task<PagedList<Address>> GetAddresses(AddressesParameters addressesParameters)
   {
-    return Get().Where(x => x.ClientId == id).ToList();
+    return await PagedList<Address>.ToPagedList(Get().OrderBy(a => a.AddressId), addressesParameters.PageNumber, addressesParameters.PageSize);
   }
 }

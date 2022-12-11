@@ -22,77 +22,12 @@ public class ClientsController : ControllerBase
     _mapper = mapper;
   }
 
-  [HttpGet("addresses")]
-  public ActionResult<IEnumerable<ClientDTO>> GetClientsAddresses()
-  {
-    try
-    {
-      var clients = _uof.ClientRepository.Get().Include(a => a.Addresses).AsNoTracking().ToList();
-      var clientsDTO = _mapper.Map<List<ClientDTO>>(clients);
-      return clientsDTO;
-    }
-    catch (Exception)
-    {
-      return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um problema ao tentar executar a sua solicitação.");
-    }
-  }
-
-  [HttpGet("files")]
-  public ActionResult<IEnumerable<ClientDTO>> GetClientsFiles()
-  {
-    try
-    {
-      var clients = _uof.ClientRepository.Get().Include(f => f.Files).AsNoTracking().ToList();
-      var clientsDTO = _mapper.Map<List<ClientDTO>>(clients);
-      return clientsDTO;
-    }
-    catch (Exception)
-    {
-      return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um problema ao tentar executar a sua solicitação.");
-    }
-  }
-
-  [HttpGet("addresses/files")]
-  public ActionResult<IEnumerable<ClientDTO>> GetClientsAddressesFiles()
-  {
-    try
-    {
-      var clients = _uof.ClientRepository.Get().Include(a => a.Addresses).Include(f => f.Files).AsNoTracking().ToList();
-      var clientsDTO = _mapper.Map<List<ClientDTO>>(clients);
-      return clientsDTO;
-    }
-    catch (Exception)
-    {
-      return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um problema ao tentar executar a sua solicitação.");
-    }
-  }
-
-  [HttpGet("GetMaleClients")]
-  public ActionResult<IEnumerable<ClientDTO>> GetMaleClients()
-  {
-    try
-    {
-
-      var clients = _uof.ClientRepository.GetMaleClients().ToList();
-      var clientsDTO = _mapper.Map<List<ClientDTO>>(clients);
-      if (clients.Count == 0)
-      {
-        return NotFound("Não existem clientes masculinos");
-      }
-      return clientsDTO;
-    }
-    catch (Exception)
-    {
-      return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um problema ao tentar executar a sua solicitação.");
-    }
-  }
-
   [HttpGet]
-  public ActionResult<IEnumerable<ClientDTO>> Get([FromQuery] ClientsParameters clientsParameters)
+  public async Task<ActionResult<IEnumerable<ClientDTO>>> Get([FromQuery] ClientsParameters clientsParameters)
   {
     try
     {
-      var clients = _uof.ClientRepository.GetClients(clientsParameters);
+      var clients = await _uof.ClientRepository.GetClients(clientsParameters);
       var metadata = new
       {
         clients.TotalCount,
@@ -119,12 +54,77 @@ public class ClientsController : ControllerBase
 
   }
 
-  [HttpGet("{id}", Name = "GetClient")]
-  public ActionResult<ClientDTO> Get(int id)
+  [HttpGet("addresses")]
+  public async Task<ActionResult<IEnumerable<ClientDTO>>> GetClientsAddresses()
   {
     try
     {
-      var client = _uof.ClientRepository.Get().Include(a => a.Addresses).Include(f => f.Files).AsNoTracking().FirstOrDefault(c => c.ClientId == id);
+      var clients = await _uof.ClientRepository.Get().Include(a => a.Addresses).AsNoTracking().ToListAsync();
+      var clientsDTO = _mapper.Map<List<ClientDTO>>(clients);
+      return clientsDTO;
+    }
+    catch (Exception)
+    {
+      return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um problema ao tentar executar a sua solicitação.");
+    }
+  }
+
+  [HttpGet("files")]
+  public async Task<ActionResult<IEnumerable<ClientDTO>>> GetClientsFiles()
+  {
+    try
+    {
+      var clients = await _uof.ClientRepository.Get().Include(f => f.Files).AsNoTracking().ToListAsync();
+      var clientsDTO = _mapper.Map<List<ClientDTO>>(clients);
+      return clientsDTO;
+    }
+    catch (Exception)
+    {
+      return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um problema ao tentar executar a sua solicitação.");
+    }
+  }
+
+  [HttpGet("addresses/files")]
+  public async Task<ActionResult<IEnumerable<ClientDTO>>> GetClientsAddressesFiles()
+  {
+    try
+    {
+      var clients = await _uof.ClientRepository.Get().Include(a => a.Addresses).Include(f => f.Files).AsNoTracking().ToListAsync();
+      var clientsDTO = _mapper.Map<List<ClientDTO>>(clients);
+      return clientsDTO;
+    }
+    catch (Exception)
+    {
+      return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um problema ao tentar executar a sua solicitação.");
+    }
+  }
+
+  [HttpGet("GetMaleClients")]
+  public async Task<ActionResult<IEnumerable<ClientDTO>>> GetMaleClients()
+  {
+    try
+    {
+      var clients = await _uof.ClientRepository.GetMaleClients();
+      var clientsDTO = _mapper.Map<List<ClientDTO>>(clients);
+      if (clients.Count() == 0)
+      {
+        return NotFound("Não existem clientes masculinos");
+      }
+      return clientsDTO;
+    }
+    catch (Exception)
+    {
+      return StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um problema ao tentar executar a sua solicitação.");
+    }
+  }
+
+
+  [HttpGet("{id}", Name = "GetClient")]
+  public async Task<ActionResult<ClientDTO>> Get(int id)
+  {
+    try
+    {
+      var client = await _uof.ClientRepository.Get().Include(a => a.Addresses).Include(f => f.Files).AsNoTracking().FirstOrDefaultAsync(c => c.ClientId == id);
       var clientDTO = _mapper.Map<ClientDTO>(client);
       if (client == null)
       {
@@ -140,7 +140,7 @@ public class ClientsController : ControllerBase
   }
 
   [HttpPost]
-  public ActionResult Post(ClientDTO clientDto)
+  public async Task<ActionResult> Post(ClientDTO clientDto)
   {
     try
     {
@@ -150,7 +150,7 @@ public class ClientsController : ControllerBase
       }
       var client = _mapper.Map<Client>(clientDto);
       _uof.ClientRepository.Add(client);
-      _uof.Commit();
+      await _uof.Commit();
 
       var clientDTO = _mapper.Map<ClientDTO>(client);
 
@@ -164,7 +164,7 @@ public class ClientsController : ControllerBase
   }
 
   [HttpPut("{id}")]
-  public ActionResult Put(int id, ClientDTO clientDto)
+  public async Task<ActionResult> Put(int id, ClientDTO clientDto)
   {
     try
     {
@@ -174,7 +174,7 @@ public class ClientsController : ControllerBase
       }
       var client = _mapper.Map<Client>(clientDto);
       _uof.ClientRepository.Update(client);
-      _uof.Commit();
+      await _uof.Commit();
 
       return Ok();
     }
@@ -186,7 +186,7 @@ public class ClientsController : ControllerBase
   }
 
   [HttpDelete("{id}")]
-  public ActionResult<ClientDTO> Delete(int id)
+  public async Task<ActionResult<ClientDTO>> Delete(int id)
   {
     try
     {
@@ -196,7 +196,7 @@ public class ClientsController : ControllerBase
         return NotFound($"Cliente com id {id} não encontrado.");
       }
       _uof.ClientRepository.Delete(client);
-      _uof.Commit();
+      await _uof.Commit();
 
       var clientDto = _mapper.Map<ClientDTO>(client);
 

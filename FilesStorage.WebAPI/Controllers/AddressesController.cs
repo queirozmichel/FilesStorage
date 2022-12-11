@@ -22,11 +22,11 @@ public class AddressesController : ControllerBase
   }
 
   [HttpGet]
-  public ActionResult<IEnumerable<AddressDTO>> Get([FromQuery] AddressesParameters addressesParameters)
+  public async Task<ActionResult<IEnumerable<AddressDTO>>> Get([FromQuery] AddressesParameters addressesParameters)
   {
     try
     {      
-      var addresses = _uof.AddressRepository.GetAddresses(addressesParameters);
+      var addresses = await _uof.AddressRepository.GetAddresses(addressesParameters);
       var metadata = new
       {
         addresses.TotalCount,
@@ -54,11 +54,11 @@ public class AddressesController : ControllerBase
   }
 
   [HttpGet("{id}", Name = "GetAddress")]
-  public ActionResult<AddressDTO> Get(int id)
+  public async Task<ActionResult<AddressDTO>> Get(int id)
   {
     try
     {
-      var address = _uof.AddressRepository.GetById(a => a.AddressId == id);
+      var address = await _uof.AddressRepository.GetById(a => a.AddressId == id);
       var addressDto = _mapper.Map<AddressDTO>(address);
       if (address is null)
       {
@@ -74,13 +74,13 @@ public class AddressesController : ControllerBase
   }
 
   [HttpGet("GetAddressesByClient")]
-  public ActionResult<IEnumerable<AddressDTO>> GetAddressesByClientId(int id)
+  public async Task<ActionResult<IEnumerable<AddressDTO>>> GetAddressesByClientId(int id)
   {
     try
     {
-      var addresses = _uof.AddressRepository.GetAddressesByClientId(id).ToList();
+      var addresses = await _uof.AddressRepository.GetAddressesByClientId(id);
       var addressesDto = _mapper.Map<List<AddressDTO>>(addresses);
-      if (addresses.Count == 0)
+      if (addresses.Count() == 0)
       {
         return NotFound($"Não existem endereços com o clientId {id}.");
       }
@@ -94,7 +94,7 @@ public class AddressesController : ControllerBase
   }
 
   [HttpPost]
-  public ActionResult Post(AddressDTO addressDto)
+  public async Task<ActionResult> Post(AddressDTO addressDto)
   {
     try
     {
@@ -104,7 +104,7 @@ public class AddressesController : ControllerBase
       }
       var address = _mapper.Map<Address>(addressDto);
       _uof.AddressRepository.Add(address);
-      _uof.Commit();
+      await _uof.Commit();
 
       var addressesDTO = _mapper.Map<AddressDTO>(address);
 
@@ -118,7 +118,7 @@ public class AddressesController : ControllerBase
   }
 
   [HttpPut("{id}")]
-  public ActionResult Put(int id, AddressDTO addressDto)
+  public async Task<ActionResult> Put(int id, AddressDTO addressDto)
   {
     try
     {
@@ -128,7 +128,7 @@ public class AddressesController : ControllerBase
       }
       var address = _mapper.Map<Address>(addressDto);
       _uof.AddressRepository.Update(address);
-      _uof.Commit();
+      await _uof.Commit();
 
       return Ok();
     }
@@ -140,17 +140,17 @@ public class AddressesController : ControllerBase
   }
 
   [HttpDelete("{id}")]
-  public ActionResult<AddressDTO> Delete(int id)
+  public async Task<ActionResult<AddressDTO>> Delete(int id)
   {
     try
     {
-      var address = _uof.AddressRepository.GetById(a => a.AddressId == id);
+      var address = await _uof.AddressRepository.GetById(a => a.AddressId == id);
       if (address == null)
       {
         return NotFound($"Endereço com id {id} não encontrado.");
       }
       _uof.AddressRepository.Delete(address);
-      _uof.Commit();
+      await _uof.Commit();
 
       var addressDto = _mapper.Map<AddressDTO>(address);
 

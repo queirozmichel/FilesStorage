@@ -1,6 +1,6 @@
 ﻿using FilesStorage.WebAPI.Context;
-using FilesStorage.WebAPI.Models;
 using FilesStorage.WebAPI.Pagination;
+using Microsoft.EntityFrameworkCore;
 using File = FilesStorage.WebAPI.Models.File;
 
 namespace FilesStorage.WebAPI.Repository;
@@ -11,13 +11,13 @@ public class FileRepository : Repository<File>, IFileRepository
   {
   }
 
-  public PagedList<File> GetFiles(FilesParameters filesParameters)
+  public async Task<IEnumerable<File>> GetFilesByClientId(int id)
   {
-    return PagedList<File>.ToPagedList(Get().OrderBy(f => f.Name), filesParameters.PageNumber, filesParameters.PageSize);
+    return await Get().Where(f => f.ClientId == id).ToListAsync();
   }
 
-  public IEnumerable<File> GetFilesByClientId(int id)
+  public async Task<PagedList<File>> GetFiles(FilesParameters filesParameters)
   {
-    return Get().Where(f => f.ClientId == id);
+    return await PagedList<File>.ToPagedList(Get().OrderBy(f => f.Name), filesParameters.PageNumber, filesParameters.PageSize);
   }
 }

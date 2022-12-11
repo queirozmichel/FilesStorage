@@ -5,7 +5,6 @@ using FilesStorage.WebAPI.Repository;
 using FilesStorage.WebAPI.DTOs;
 using AutoMapper;
 using FilesStorage.WebAPI.Pagination;
-using FilesStorage.WebAPI.Models;
 using Newtonsoft.Json;
 
 namespace FilesStorage.WebAPI.Controllers;
@@ -24,11 +23,11 @@ public class FilesController : ControllerBase
   }
 
   [HttpGet]
-  public ActionResult<IEnumerable<FileDTO>> Get([FromQuery] FilesParameters filesParameters)
+  public async Task<ActionResult<IEnumerable<FileDTO>>> Get([FromQuery] FilesParameters filesParameters)
   {
     try
     {
-      var files = _uof.FileRepository.GetFiles(filesParameters);
+      var files = await _uof.FileRepository.GetFiles(filesParameters);
       var metadata = new
       {
         files.TotalCount,
@@ -55,11 +54,11 @@ public class FilesController : ControllerBase
   }
 
   [HttpGet("{id}", Name = "GetFile")]
-  public ActionResult<FileDTO> Get(int id)
+  public async Task<ActionResult<FileDTO>> Get(int id)
   {
     try
     {
-      var file = _uof.FileRepository.Get().AsNoTracking().FirstOrDefault(f => f.FileId == id);
+      var file = await _uof.FileRepository.Get().AsNoTracking().FirstOrDefaultAsync(f => f.FileId == id);
       var fileDto = _mapper.Map<FileDTO>(file);
       if (file == null)
       {
@@ -74,16 +73,16 @@ public class FilesController : ControllerBase
   }
 
   [HttpGet("GetFilesByClientId")]
-  public ActionResult<IEnumerable<FileDTO>> GetFilesByClientId(int id)
+  public async Task<ActionResult<IEnumerable<FileDTO>>> GetFilesByClientId(int id)
   {
     try
     {
-      var files = _uof.FileRepository.GetFilesByClientId(id).ToList();
+      var files = await _uof.FileRepository.GetFilesByClientId(id);
       var filesDto = _mapper.Map<List<FileDTO>>(files);
-      if (files.Count == 0)
-      {
-        return NotFound($"Não existem arquivos com o clientId {id}.");
-      }
+      //if (files.Count == 0)
+      //{
+      //  return NotFound($"Não existem arquivos com o clientId {id}.");
+      //}
       return filesDto;
     }
     catch (Exception)
@@ -93,7 +92,7 @@ public class FilesController : ControllerBase
   }
 
   [HttpPost]
-  public ActionResult Post(IFormFile iFormFile, int clientId)
+  public async Task<ActionResult> Post(IFormFile iFormFile, int clientId)
   {
     try
     {
@@ -113,7 +112,7 @@ public class FilesController : ControllerBase
       }
 
       _uof.FileRepository.Add(file);
-      _uof.Commit();
+      await _uof.Commit();
 
       return new CreatedAtRouteResult("GetFile", new { id = file.FileId }, file);
     }
@@ -124,7 +123,7 @@ public class FilesController : ControllerBase
   }
 
   [HttpPut("{id}")]
-  public ActionResult Put(int id, int clientId, IFormFile iFormFile)
+  public async Task<ActionResult> Put(int id, int clientId, IFormFile iFormFile)
   {
     try
     {
@@ -140,7 +139,7 @@ public class FilesController : ControllerBase
       }
 
       _uof.FileRepository.Update(file);
-      _uof.Commit();
+      await _uof.Commit();
 
       return Ok(file);
     }
@@ -151,18 +150,18 @@ public class FilesController : ControllerBase
   }
 
   [HttpDelete("{id}")]
-  public ActionResult Delete(int id)
+  public async Task<ActionResult> Delete(int id)
   {
     try
     {
-      var file = _uof.FileRepository.GetById(f => f.FileId == id);
+      var file = await _uof.FileRepository.GetById(f => f.FileId == id);
 
       if (file == null)
       {
         return NotFound($"Arquivo com id {id} não encontrado.");
       }
       _uof.FileRepository.Delete(file);
-      _uof.Commit();
+      await _uof.Commit();
 
       return Ok("O arquivo foi apagado com sucesso!");
     }

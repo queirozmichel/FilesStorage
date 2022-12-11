@@ -5,6 +5,6 @@ namespace FilesStorage.WebAPI.Repository;
 
 public interface IClientRepository : IRepository<Client>
 {
-  IEnumerable<Client> GetMaleClients();
-  PagedList<Client> GetClients(ClientsParameters clientsParameters);
+  Task<IEnumerable<Client>> GetMaleClients();
+  Task<PagedList<Client>> GetClients(ClientsParameters clientsParameters);
 }
