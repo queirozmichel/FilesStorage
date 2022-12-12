@@ -14,6 +14,8 @@ namespace FilesStorage.WebAPI.Controllers;
 [Route("api/[controller]")] //Nome do controlador "Clients"
 [ApiController]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+[Produces("application/json")]
+[ApiConventionType(typeof(DefaultApiConventions))]
 public class ClientsController : ControllerBase
 {
   private readonly IUnitOfWork _uof;
@@ -25,6 +27,10 @@ public class ClientsController : ControllerBase
     _mapper = mapper;
   }
 
+  /// <summary>
+  /// Obtém todos os clientes por paginação
+  /// </summary>
+  /// <returns></returns>
   [HttpGet]
   public async Task<ActionResult<IEnumerable<ClientDTO>>> Get([FromQuery] ClientsParameters clientsParameters)
   {
@@ -57,6 +63,10 @@ public class ClientsController : ControllerBase
 
   }
 
+  /// <summary>
+  /// Obtém todos os clientes com os respectivos endereços
+  /// </summary>
+  /// <returns></returns>
   [HttpGet("addresses")]
   public async Task<ActionResult<IEnumerable<ClientDTO>>> GetClientsAddresses()
   {
@@ -72,6 +82,10 @@ public class ClientsController : ControllerBase
     }
   }
 
+  /// <summary>
+  /// Obtém todos os clientes com os respectivos arquivos
+  /// </summary>
+  /// <returns></returns>
   [HttpGet("files")]
   public async Task<ActionResult<IEnumerable<ClientDTO>>> GetClientsFiles()
   {
@@ -87,6 +101,10 @@ public class ClientsController : ControllerBase
     }
   }
 
+  /// <summary>
+  /// Obtém todos os clientes com os respectivos endereços e arquivos
+  /// </summary>
+  /// <returns></returns>
   [HttpGet("addresses/files")]
   public async Task<ActionResult<IEnumerable<ClientDTO>>> GetClientsAddressesFiles()
   {
@@ -102,6 +120,10 @@ public class ClientsController : ControllerBase
     }
   }
 
+  /// <summary>
+  /// Obtém todos os clientes do sexo masculino
+  /// </summary>
+  /// <returns></returns>
   [HttpGet("GetMaleClients")]
   public async Task<ActionResult<IEnumerable<ClientDTO>>> GetMaleClients()
   {
@@ -121,7 +143,11 @@ public class ClientsController : ControllerBase
     }
   }
 
-
+  /// <summary>
+  /// Obtém um cliente pelo seu respectivo Id
+  /// </summary>
+  /// <param name="id">Id do cliente</param>
+  /// <returns></returns>
   [HttpGet("{id}", Name = "GetClient")]
   public async Task<ActionResult<ClientDTO>> Get(int id)
   {
@@ -142,6 +168,11 @@ public class ClientsController : ControllerBase
 
   }
 
+  /// <summary>
+  /// Inclui um novo cliente
+  /// </summary>
+  /// <param name="clientDto">Um objeto ClienteDTO</param>
+  /// <returns></returns>
   [HttpPost]
   public async Task<ActionResult> Post(ClientDTO clientDto)
   {
@@ -166,6 +197,12 @@ public class ClientsController : ControllerBase
 
   }
 
+  /// <summary>
+  /// Atualiza um cliente pelo seu respectivo Id
+  /// </summary>
+  /// <param name="id">Id do cliente</param>
+  /// <param name="clientDto">Um objeto ClienteDTO</param>
+  /// <returns></returns>
   [HttpPut("{id}")]
   public async Task<ActionResult> Put(int id, ClientDTO clientDto)
   {
@@ -188,6 +225,11 @@ public class ClientsController : ControllerBase
 
   }
 
+  /// <summary>
+  /// Apaga um cliente pelo seu respectivo Id
+  /// </summary>
+  /// <param name="id"></param>
+  /// <returns></returns>
   [HttpDelete("{id}")]
   public async Task<ActionResult<ClientDTO>> Delete(int id)
   {

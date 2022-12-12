@@ -10,6 +10,8 @@ namespace FilesStorage.WebAPI.Controllers
 {
   [Route("api/[controller]")]
   [ApiController]
+  [Produces("application/json")]
+  [ApiConventionType(typeof(DefaultApiConventions))]
   public class AuthorizeController : ControllerBase
   {
     private readonly UserManager<IdentityUser> _userManager;
@@ -23,12 +25,21 @@ namespace FilesStorage.WebAPI.Controllers
       _configuration = configuration;
     }
 
+    /// <summary>
+    /// Verifica se a autenticação está disponível
+    /// </summary>
+    /// <returns></returns>
     [HttpGet]
     public ActionResult<string> Get()
     {
       return "AuthorizeController :: Acessado em : " + DateTime.Now.ToLongDateString();
     }
 
+    /// <summary>
+    /// Registra um novo usuário
+    /// </summary>
+    /// <param name="model">Um objeto UserDTO</param>
+    /// <returns></returns>
     [HttpPost("register")]
     public async Task<ActionResult> RegisterUser([FromBody] UserDTO model)
     {
@@ -50,6 +61,11 @@ namespace FilesStorage.WebAPI.Controllers
       return Ok(GenerateToken(model));
     }
 
+    /// <summary>
+    /// Realiza o login de um usuário
+    /// </summary>
+    /// <param name="userInfo">Um objeto UserDTO</param>
+    /// <returns></returns>
     [HttpPost("login")]
     public async Task<ActionResult> Login([FromBody] UserDTO userInfo)
     {

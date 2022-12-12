@@ -14,6 +14,8 @@ namespace FilesStorage.WebAPI.Controllers;
 [Route("api/[controller]")] //Nome do controlador "Files"
 [ApiController]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+[Produces("application/json")]
+[ApiConventionType(typeof(DefaultApiConventions))]
 public class FilesController : ControllerBase
 {
   private readonly IUnitOfWork _uof;
@@ -25,6 +27,11 @@ public class FilesController : ControllerBase
     _mapper = mapper;
   }
 
+  /// <summary>
+  /// Obtém todos os arquivos por paginação
+  /// </summary>
+  /// <param name="filesParameters"></param>
+  /// <returns></returns>
   [HttpGet]
   public async Task<ActionResult<IEnumerable<FileDTO>>> Get([FromQuery] FilesParameters filesParameters)
   {
@@ -56,6 +63,11 @@ public class FilesController : ControllerBase
     }
   }
 
+  /// <summary>
+  /// Obtém um arquivo pelo ser respectivo Id
+  /// </summary>
+  /// <param name="id">Id do arquivo</param>
+  /// <returns></returns>
   [HttpGet("{id}", Name = "GetFile")]
   public async Task<ActionResult<FileDTO>> Get(int id)
   {
@@ -75,6 +87,11 @@ public class FilesController : ControllerBase
     }
   }
 
+  /// <summary>
+  /// Obtém todos os arquivos de um respectivo cliente
+  /// </summary>
+  /// <param name="id"> Id do cliente</param>
+  /// <returns></returns>
   [HttpGet("GetFilesByClientId")]
   public async Task<ActionResult<IEnumerable<FileDTO>>> GetFilesByClientId(int id)
   {
@@ -94,6 +111,12 @@ public class FilesController : ControllerBase
     }
   }
 
+  /// <summary>
+  /// Inclui um novo arquivo a um respectivo cliente
+  /// </summary>
+  /// <param name="iFormFile">Arquivo</param>
+  /// <param name="clientId">Id do cliente</param>
+  /// <returns></returns>
   [HttpPost]
   public async Task<ActionResult> Post(IFormFile iFormFile, int clientId)
   {
@@ -125,6 +148,13 @@ public class FilesController : ControllerBase
     }
   }
 
+  /// <summary>
+  /// Atualiza um arquivo pelo seu respectivo Id
+  /// </summary>
+  /// <param name="id">Id do arquivo</param>
+  /// <param name="clientId">Id do cliente</param>
+  /// <param name="iFormFile">Arquivo</param>
+  /// <returns></returns>
   [HttpPut("{id}")]
   public async Task<ActionResult> Put(int id, int clientId, IFormFile iFormFile)
   {
@@ -152,6 +182,11 @@ public class FilesController : ControllerBase
     }
   }
 
+  /// <summary>
+  /// Apaga um arquivo pelo seu respectivo Id
+  /// </summary>
+  /// <param name="id">Id do arquivo</param>
+  /// <returns></returns>
   [HttpDelete("{id}")]
   public async Task<ActionResult> Delete(int id)
   {

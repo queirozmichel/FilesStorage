@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args); //Equivalente ao ConfigureServices()
 
@@ -47,6 +48,10 @@ builder.Services.AddSwaggerGen(c =>
       new string[]{}
     }
   });
+  //para incluir os comentários XML descritos nas Actions
+  var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+  var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFilename);
+  c.IncludeXmlComments(xmlPath);
 });
 builder.Services.AddScoped<IUnitOfWork, UnityOfWork>();
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(mySqlServerConnection));

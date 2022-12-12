@@ -13,6 +13,9 @@ namespace FilesStorage.WebAPI.Controllers;
 [Route("api/[controller]")] //Nome do controlador "Addresses"
 [ApiController]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+[Produces("application/json")]
+[ApiConventionType(typeof(DefaultApiConventions))]
+
 public class AddressesController : ControllerBase
 {
   private readonly IUnitOfWork _uof;
@@ -24,11 +27,16 @@ public class AddressesController : ControllerBase
     _mapper = mapper;
   }
 
+  /// <summary>
+  /// Obtém todos os endereços por paginação
+  /// </summary>
+  /// <param name="addressesParameters">Parâmetros de paginação</param>
+  /// <returns></returns>
   [HttpGet]
   public async Task<ActionResult<IEnumerable<AddressDTO>>> Get([FromQuery] AddressesParameters addressesParameters)
   {
     try
-    {      
+    {
       var addresses = await _uof.AddressRepository.GetAddresses(addressesParameters);
       var metadata = new
       {
@@ -42,7 +50,7 @@ public class AddressesController : ControllerBase
 
       Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(metadata));
 
-      var addressesDto = _mapper.Map<List<AddressDTO>>(addresses); 
+      var addressesDto = _mapper.Map<List<AddressDTO>>(addresses);
 
       if (addresses is null)
       {
@@ -56,6 +64,11 @@ public class AddressesController : ControllerBase
     }
   }
 
+  /// <summary>
+  /// Obtém um endereço pelo seu Id
+  /// </summary>
+  /// <param name="id">Id do endereço</param>
+  /// <returns></returns>
   [HttpGet("{id}", Name = "GetAddress")]
   public async Task<ActionResult<AddressDTO>> Get(int id)
   {
@@ -76,6 +89,11 @@ public class AddressesController : ControllerBase
     }
   }
 
+  /// <summary>
+  /// Obtém os endereços de um cliente pelo Id do cliente
+  /// </summary>
+  /// <param name="id">Id do cliente</param>
+  /// <returns></returns>
   [HttpGet("GetAddressesByClient")]
   public async Task<ActionResult<IEnumerable<AddressDTO>>> GetAddressesByClientId(int id)
   {
@@ -96,6 +114,11 @@ public class AddressesController : ControllerBase
 
   }
 
+  /// <summary>
+  /// Inclui um novo endereço
+  /// </summary>
+  /// <param name="addressDto">Um objeto AddressDTO</param>
+  /// <returns></returns>
   [HttpPost]
   public async Task<ActionResult> Post(AddressDTO addressDto)
   {
@@ -120,6 +143,12 @@ public class AddressesController : ControllerBase
 
   }
 
+  /// <summary>
+  /// Atualiza um endereço pelo seu respectivo Id
+  /// </summary>
+  /// <param name="id">Id do endereço</param>
+  /// <param name="addressDto">Um objeto AddressDTO</param>
+  /// <returns></returns>
   [HttpPut("{id}")]
   public async Task<ActionResult> Put(int id, AddressDTO addressDto)
   {
@@ -142,6 +171,11 @@ public class AddressesController : ControllerBase
 
   }
 
+  /// <summary>
+  /// Apaga um endereço pelo seu respectivo Id
+  /// </summary>
+  /// <param name="id">Id do endereço</param>
+  /// <returns></returns>
   [HttpDelete("{id}")]
   public async Task<ActionResult<AddressDTO>> Delete(int id)
   {
